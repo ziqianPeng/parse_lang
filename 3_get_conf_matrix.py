@@ -6,8 +6,15 @@ from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
 ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC = range(10)
+sub_pat = re.compile(r'[:|@|$]')
+sub_pat1 = re.compile(r'[@|$]')
 
-def get_conf_all(conll_gold_path, conll_pred_path, regroup = False, infix = 'fr'):
+
+def get_conf_all(conll_gold_path, conll_pred_path, regroup = None, infix = 'fr'):
+    """
+    confusion matrix by occurency.
+    regroup == None (all DEPREL), 0 (remove :,@,$) 1 (consider :)
+    """
     conll_gold = open(conll_gold_path).read().strip().split('\n\n')
     conll_parsed = open(conll_pred_path).read().strip().split('\n\n')
 
@@ -21,8 +28,9 @@ def get_conf_all(conll_gold_path, conll_pred_path, regroup = False, infix = 'fr'
                 dep_parsed = parsed_info[tid][DEPREL]
 
                 if regroup:
-                    # 'comp:obl$attitude@x' as 'comp'
-                    sub_pat = re.compile(r'[:|@|$]')
+                    assert(regroup in [0, 1])
+                    # 'comp:obl$attitude@x' as 'comp' (case 0) or 'comp:obl' (case 1)
+                    sub_pat = re.compile(r'[:|@|$]') if regroup == 0 else re.compile(r'[@|$]')
                     dep = re.split(sub_pat, dep)[0]
                     dep_parsed = re.split(sub_pat, dep_parsed)[0]
 
@@ -39,6 +47,19 @@ def get_conf_all(conll_gold_path, conll_pred_path, regroup = False, infix = 'fr'
     return conf_df
 
 
+def save_conf_fig(conf_df, fig_name):
+    deprel_list = list(conf_df.columns)
+    conf_m = conf_df.T.to_numpy()
+    print('shape of confusion matrix: ', conf_m.shape)
+    cm1 = ConfusionMatrixDisplay(confusion_matrix = conf_m, display_labels = deprel_list)
+
+    fig, ax = plt.subplots( figsize = (30, 30) )
+    cm1.plot( ax = ax, cmap = plt.cm.Blues )
+    ax.set_title( fig_name) 
+    plt.xticks(rotation = 45)
+    plt.savefig( os.path.join(store_path, f'{fig_name}.png') ) 
+
+
 def get_conf_m(conf_count_df, store_path, infix = 'fr', conf_type = 'recall', round_int = 4):
     assert(conf_type.lower() in ['precision', 'recall'])
     if conf_type == 'precision':
@@ -49,17 +70,21 @@ def get_conf_m(conf_count_df, store_path, infix = 'fr', conf_type = 'recall', ro
     # store
     conf_df.to_csv( os.path.join(store_path, f"conf_{conf_type.lower()}_{infix}.tsv"), sep = '\t' )
     # figure
-    deprel_list = list(conf_df.columns)
-    conf_m = conf_df.T.to_numpy()
-    print('shape of confusion matrix: ', conf_m.shape)
-    cm1 = ConfusionMatrixDisplay(confusion_matrix = conf_m, display_labels = deprel_list)
-
-    fig, ax = plt.subplots( figsize = (30, 30) )
-    cm1.plot( ax = ax, cmap = plt.cm.Blues )
-    ax.set_title( f"confusion_matrix_{infix}_{conf_type.lower()}" ) #count
-    plt.xticks(rotation = 45)
-    plt.savefig( os.path.join(store_path, f'confusion_matrix_{infix}_{conf_type.lower()}.png') ) #count
+    save_conf_fig(conf_df, fig_name = f"confusion_matrix_{infix}_{conf_type.lower()}"  )
     return conf_df
+
+def get_conf_main(gold_path, pred_path, store_path, regroup = None, infix = 'fr'):
+    # count
+    conf_count_df = get_conf_all(gold_path, pred_path, regroup, infix = infix)
+    # precision and recall
+    precision_df = get_conf_m(conf_count_df, store_path, infix = infix, conf_type = 'precision')
+    recall_df = get_conf_m(conf_count_df, store_path, infix = infix, conf_type = 'recall')
+
+    f1_df = 2 * (precision_df * recall_df /(precision_df + recall_df)).fillna(0)
+    f1_df.to_csv(os.path.join(store_path, f'conf_f1score_{infix}.tsv'), sep = '\t' )
+    # figure
+    save_conf_fig(f1_df, fig_name = f"confusion_matrix_{infix}_f1score"  )
+
 
 
 if __name__ == '__main__':
@@ -70,16 +95,16 @@ if __name__ == '__main__':
 
     store_path = os.path.join(project_path, 'conf_matrix')
     Path(store_path).mkdir(parents = True, exist_ok = True)
+    get_conf_main(gold_path, pred_path, store_path, regroup = None, infix = 'fr')
 
-    # conf_count_df = get_conf_all(gold_path, pred_path, infix = 'fr')
-    # precision_df = get_conf_m(conf_count_df, store_path, infix = 'fr', conf_type = 'precision')
-    # recall_df = get_conf_m(conf_count_df, store_path, infix = 'fr', conf_type = 'recall')
+    # regroup 0 (remove :,@,$)
+    store_path_0 = os.path.join(project_path, 'conf_matrix', 'regroup')
+    Path(store_path_0).mkdir(parents = True, exist_ok = True)
+    get_conf_main(gold_path, pred_path, store_path, regroup = 0, infix = 'fr')
 
-    # regroup
-    store_path_1 = os.path.join(project_path, 'conf_matrix', 'regroup')
+    # regroup 1 (remove @,$)
+    store_path_1 = os.path.join(project_path, 'conf_matrix', 'regroup1')
     Path(store_path_1).mkdir(parents = True, exist_ok = True)
+    get_conf_main(gold_path, pred_path, store_path, regroup = 1, infix = 'fr')
 
-    conf_count_df = get_conf_all(gold_path, pred_path, regroup = True, infix = 'regroup_fr')
-    precision_df = get_conf_m(conf_count_df, store_path_1, infix = 'fr_regroup', conf_type = 'precision')
-    recall_df = get_conf_m(conf_count_df, store_path_1, infix = 'fr_regroup', conf_type = 'recall')
 

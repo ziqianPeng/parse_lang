@@ -161,8 +161,6 @@ def add_uid(parser_id, parsed_path, origin_path = None, just_parse_list = None):
     return (conllu_list, conll_files)
 
 
-
-
 # For kirian's parser 
 def add_multitok(parsed_path, gold_path):
     parsed = [sent.split('\n') for sent in open(parsed_path).read().strip().split('\n\n')]

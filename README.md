@@ -19,6 +19,15 @@
   compute confusion matrix of precision, recall, f1-score for different DEPREL
 
 
+## Usage
+
+1. mkdir folder_name
+2. create `folder_name/input_conllus/to_parse` and copy files to parse under this 
+3. modify necessary variables, adapt and run (optional `0_preprocessing.py` and ) `1_fr_prepare_dataset.py` 
+to prepare project folder
+4. modify necessary variables and run `2_trankit_fr_jour.py` with nohup 
+5. modify necessary variables and run `3_get_conf_matrix.py` to get confusion matrix
+
 ## Presentation
 ### 0_preprocessing.py: 
 
@@ -56,7 +65,7 @@
   
   #### usage
   modify the `fr_path` and `raw_docpath` , 
-  put files to parse under the folder `input_conllus/to_parse`
+  put files to parse under the folder `{fr_path}/input_conllus/to_parse`
   make sure that the `project_path` is consistent with what you will specified in `2_trankit_fr_jour.py `
   
   adapte `make_data_lang` to read gold files if necessary
