@@ -27,7 +27,7 @@ def get_conf_all(conll_gold_path, conll_pred_path, regroup = None, infix = 'fr')
                 dep = gold_info[tid][DEPREL]
                 dep_parsed = parsed_info[tid][DEPREL]
 
-                if regroup:
+                if regroup is not None:
                     assert(regroup in [0, 1])
                     # 'comp:obl$attitude@x' as 'comp' (case 0) or 'comp:obl' (case 1)
                     sub_pat = re.compile(r'[:|@|$]') if regroup == 0 else re.compile(r'[@|$]')
@@ -100,11 +100,11 @@ if __name__ == '__main__':
     # regroup 0 (remove :,@,$)
     store_path_0 = os.path.join(project_path, 'conf_matrix', 'regroup')
     Path(store_path_0).mkdir(parents = True, exist_ok = True)
-    get_conf_main(gold_path, pred_path, store_path, regroup = 0, infix = 'fr')
+    get_conf_main(gold_path, pred_path, store_path_0, regroup = 0, infix = 'fr')
 
     # regroup 1 (remove @,$)
     store_path_1 = os.path.join(project_path, 'conf_matrix', 'regroup1')
     Path(store_path_1).mkdir(parents = True, exist_ok = True)
-    get_conf_main(gold_path, pred_path, store_path, regroup = 1, infix = 'fr')
+    get_conf_main(gold_path, pred_path, store_path_1, regroup = 1, infix = 'fr')
 
 
