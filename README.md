@@ -22,7 +22,8 @@
 ## Usage
 
 1. mkdir folder_name
-2. create `folder_name/input_conllus/to_parse` and copy files to parse under this 
+2. create `folder_name/input_conllus/to_parse` and copy files to parse under it, 
+you can define the "folder_name" as you wish
 3. modify necessary variables, adapt and run (optional `0_preprocessing.py` and ) `1_fr_prepare_dataset.py` 
 to prepare project folder
 4. modify necessary variables and run `2_trankit_fr_jour.py` with nohup 
@@ -101,6 +102,7 @@ to prepare project folder
 
     run in background and write output into `nohup_name.out`. 
     ```
+    conda activate base
     nohup python3 2_trankit_fr_jour.py >> nohup_name.out 2>&1 &
     ```
 
