@@ -1,4 +1,4 @@
-import os, random
+import os, random, sys
 from pathlib import Path
 import numpy as np
 
@@ -57,4 +57,10 @@ def make_data_lang(raw_docpath, train_datapath, dev_ratio = 0.1):
 
 
 if __name__ == "__main__":
-    make_data_lang(raw_docpath, train_datapath)
+    if len(sys.argv) < 2:
+        print("Usage: 1_fr_prepare_dataset.py is_to_train")
+        sys.exit(-1)
+
+    prepare_train = True if sys.argv[1].lower() == 'true' else False
+    if prepare_train:
+        make_data_lang(raw_docpath, train_datapath)
