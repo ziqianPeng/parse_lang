@@ -20,14 +20,45 @@
 
 
 ## Usage
+### A. Train and parse
 
+0. make sure there is no empty conll sentence in the dataset, and file format is `.conllu`
 1. mkdir folder_name
 2. create `folder_name/input_conllus/to_parse` and copy files to parse under it, 
 you can define the "folder_name" as you wish
-3. modify necessary variables, adapt and run (optional `0_preprocessing.py` and ) `1_fr_prepare_dataset.py` 
+3. modify necessary variables, adapt and run (optional `0_preprocessing.py` and ) `python3 1_fr_prepare_dataset.py True` 
 to prepare project folder
 4. modify necessary variables and run `2_trankit_fr_jour.py` with nohup 
 5. modify necessary variables and run `3_get_conf_matrix.py` to get confusion matrix
+
+### B.Use already trained model to parse files 
+
+0. suppose the trained model is under `folder_name` as in A.1, then
+1. under `autogramm/test/folder_name/input_conllus`, 
+  two ways:
+  i) make a folder `to_parse` with only the new files to parse inside,
+  
+    then under `autogramm/test/` adapt `1_fr_prepare_dataset.py` with the correct `folder_name`, 
+    run `python3 1_fr_prepare_dataset.py False` to update *to_parse_fnames.tsv*  
+    
+    ii) Put new files under `autogramm/test/folder_name/input_conllus/to_parse`
+     and rewrite *to_parse_fnames.tsv* with these filenames without format suffix
+
+2. sous `autogramm/test/`
+  adapte `2_trankit_fr_jour.py` with correct `folder_name`, 
+  set `need_train = False`, run
+
+  ```
+  conda activate base
+  python3 2_trankit_fr_jour.py
+  ```
+  You can also run following command line to report the output into a `nohup_filename.out` file:
+  ```
+  conda activate base
+  nohup python3 2_trankit_fr_jour.py >> nohup_filename.out 2>&1 &
+  ```
+  The parsed results are stored in `folder_name/parserId_res/predicted` (here `folder_name/trankitParser_res/predicted`)
+
 
 ## Presentation
 ### 0_preprocessing.py: 

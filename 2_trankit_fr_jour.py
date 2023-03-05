@@ -19,3 +19,6 @@ parser_id = 'trankitParser'
 
 os.system(f"/home/arboratorgrew/miniconda3/bin/python3 {trankit_fpath} {project_path} {parser_id} \
     {need_train} {epochs} {epochs_tok}  {tokenized} {parse_train}")
+
+print('End')
+print(f'Store path = {project_path}/{parser_id}_res/predicted')
